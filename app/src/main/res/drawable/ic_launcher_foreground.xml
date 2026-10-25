@@ -1,0 +1,58 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Transparent Background Canvas Grid Isolation -->
+    <path
+        android:pathData="M0,0h108v108h-108z"
+        android:fillColor="#00000000" />
+
+
+    <path
+        android:pathData="M24,14h60c5.52,0 10,4.48 10,10v60c0,5.52 -4.48,10 -10,10h-60c-5.52,0 -10,-4.48 -10,-10v-60c0,-5.52 4.48,-10 10,-10z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="14"
+                android:startY="94"
+                android:endX="94"
+                android:endY="14"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#008080" /> <!-- Deep Emerald Teal Accent Base -->
+                <item android:offset="0.5" android:color="#1A2B6D" /> <!-- Transitional Sapphire Blue Middle -->
+                <item android:offset="1.0" android:color="#0A1435" /> <!-- Rich Midnight Corporate Navy Top -->
+            </gradient>
+        </aapt:attr>
+    </path>
+
+
+    <!-- THE LEFT STATUS BAR CAPSULE: Semi-translucent glass tracking frame -->
+    <!-- 1. THE OUTER GLASS TRACK: Shifted to X=22 with perfect corner radii -->
+    <path
+        android:pathData="M22,24c0,-2.2 1.8,-4 4,-4h0c2.2,0 4,1.8 4,4v60c0,2.2 -1.8,4 -4,4h0c-2.2,0 -4,-1.8 -4,-4z"
+        android:fillColor="#26FFFFFF"
+        android:strokeColor="#4DFFFFFF"
+        android:strokeWidth="1.5" />
+
+    <!-- 2. THE PROGRESS FILL LAYER: Independently mapped to match the bottom curve parameters perfectly -->
+    <!-- Positioned precisely at X=22, filling 65% of the capsule height from the base -->
+    <path
+        android:pathData="M22,46v38c0,2.2 1.8,4 4,4h0c2.2,0 4,-1.8 4,-4v-38z"
+        android:fillColor="#B3FFFFFF" />
+
+    <!-- PERFECTLY INTEGRATED FONT AWESOME RUPEE PATH -->
+    <!-- Positioned, scaled, and padded precisely to match your screenshot layout balance -->
+    <group
+        android:translateX="37"
+        android:translateY="20"
+        android:scaleX="0.13"
+        android:scaleY="0.13">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M308,96c6.627,0 12,-5.373 12,-12V44c0,-6.627 -5.373,-12 -12,-12H12C5.373,32 0,37.373 0,44v44.748c0,6.627 5.373,12 12,12h85.28c27.308,0 48.261,9.958 60.97,27.252H12c-6.627,0 -12,5.373 -12,12v40c0,6.627 5.373,12 12,12h158.757c-6.217,36.086 -32.961,58.632 -74.757,58.632H12c-6.627,0 -12,5.373 -12,12v53.012c0,3.349 1.4,6.546 3.861,8.818l165.052,152.356a12.001,12.001 0 0 0 8.139,3.182h82.562c10.924,0 16.166,-13.408 8.139,-20.818L116.871,319.906c76.499,-2.34 131.144,-53.395 138.318,-127.906H308c6.627,0 12,-5.373 12,-12v-40c0,-6.627 -5.373,-12 -12,-12h-58.69c-3.486,-11.541 -8.28,-22.246 -14.252,-32H308z" />
+    </group>
+
+</vector>
+

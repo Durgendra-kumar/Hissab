@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widgetRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView android:id="@+id/widgetMonth" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="This month" android:textColor="@color/mute" android:textSize="12sp" />
+        <TextView android:id="@+id/widgetPercent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="" android:textColor="@color/mute" android:textSize="12sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView android:id="@+id/widgetSpent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="₹0" android:textColor="@color/text" android:textSize="22sp" android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/widgetBar"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="Spending split by payment method"
+        android:scaleType="fitXY" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="●" android:textColor="@color/pay_upi" android:textSize="10sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="UPI" android:textColor="@color/mute" android:textSize="11sp" />
+            </LinearLayout>
+            <TextView android:id="@+id/widgetUpi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₹0" android:textColor="@color/text" android:textSize="13sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="●" android:textColor="@color/pay_cash" android:textSize="10sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="Cash" android:textColor="@color/mute" android:textSize="11sp" />
+            </LinearLayout>
+            <TextView android:id="@+id/widgetCash" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₹0" android:textColor="@color/text" android:textSize="13sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="●" android:textColor="@color/pay_card" android:textSize="10sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="Credit Card" android:textColor="@color/mute" android:textSize="11sp" />
+            </LinearLayout>
+            <TextView android:id="@+id/widgetCard" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₹0" android:textColor="@color/text" android:textSize="13sp" android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

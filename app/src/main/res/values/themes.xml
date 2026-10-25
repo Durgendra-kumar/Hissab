@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark-only app theme. Set as android:theme in AndroidManifest. -->
+    <style name="Theme.ExpenseTracker" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/blue</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/nav_bar</item>
+        <item name="android:textColorPrimary">@color/text</item>
+    </style>
+    <!-- Rounded SQUARE floating button (not a circle) -->
+    <style name="ShapeAppearance.Fab.RoundedSquare" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+</resources>

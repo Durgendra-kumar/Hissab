@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tint this view in code: green <70%, orange 70-90%, red >90% -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/green" />
+    <corners android:topRightRadius="4dp" android:bottomRightRadius="4dp" />
+</shape>

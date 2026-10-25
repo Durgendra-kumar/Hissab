@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Category tile. When selected, set background to @drawable/bg_category_selected -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tileRoot"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="10dp"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="8dp">
+    <TextView android:id="@+id/tvCatIcon" android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_circle" android:gravity="center" android:text="🛒" android:textSize="22sp" />
+    <TextView android:id="@+id/tvCatName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Grocery" android:textColor="@color/mute" android:textSize="12sp" />
+</LinearLayout>
