@@ -15,7 +15,9 @@ interface ExpenseRepository {
 }
 
 interface CategoryRepository {
+    /** Built-in categories first (starting with "No category"), then the user's custom ones. */
     fun observeCategories(): Flow<List<Category>>
+    suspend fun addCustomCategory(category: Category)
 }
 
 interface BudgetRepository {

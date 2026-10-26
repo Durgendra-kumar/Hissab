@@ -7,12 +7,16 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.project.hissab.HissabApp
+import com.project.hissab.domain.model.AddCategoryResult
 import com.project.hissab.domain.model.AddExpenseResult
 import com.project.hissab.domain.model.Category
+import com.project.hissab.domain.model.CategoryInputError
 import com.project.hissab.domain.model.ExpenseDraft
 import com.project.hissab.domain.model.ExpenseField
+import com.project.hissab.domain.model.NewCategoryDraft
 import com.project.hissab.domain.model.PaymentMethod
 import com.project.hissab.domain.repository.CategoryRepository
+import com.project.hissab.domain.usecase.AddCategoryUseCase
 import com.project.hissab.domain.usecase.AddExpenseUseCase
 import com.project.hissab.domain.usecase.GetExpenseUseCase
 import com.project.hissab.domain.usecase.UpdateExpenseUseCase
@@ -29,7 +33,7 @@ data class AddExpenseUiState(
     val title: String = "",
     val amountText: String = "",
     val categories: List<Category> = emptyList(),
-    val selectedCategoryId: String? = null,
+    val selectedCategoryId: String = Category.NONE_ID,      // new expenses start as "No category"
     val paymentMethod: PaymentMethod = PaymentMethod.UPI,
     val dateTime: LocalDateTime = LocalDateTime.now(),
     val isUnnecessary: Boolean = false,
@@ -41,6 +45,8 @@ data class AddExpenseUiState(
 sealed interface AddExpenseEvent {
     data class Saved(val isEdit: Boolean) : AddExpenseEvent
     object NotFound : AddExpenseEvent
+    object CategoryAdded : AddExpenseEvent
+    data class CategoryRejected(val error: CategoryInputError) : AddExpenseEvent
 }
 
 /** expenseId == null means "add a new expense"; otherwise the expense with that id is edited. */
@@ -49,6 +55,7 @@ class AddExpenseViewModel(
     private val addExpense: AddExpenseUseCase,
     private val updateExpense: UpdateExpenseUseCase,
     private val getExpense: GetExpenseUseCase,
+    private val addCategory: AddCategoryUseCase,
     categoryRepository: CategoryRepository
 ) : ViewModel() {
 
@@ -61,13 +68,7 @@ class AddExpenseViewModel(
     init {
         viewModelScope.launch {
             categoryRepository.observeCategories().collect { categories ->
-                _uiState.update { s ->
-                    s.copy(
-                        categories = categories,
-                        selectedCategoryId = s.selectedCategoryId?.takeIf { id -> categories.any { it.id == id } }
-                            ?: categories.firstOrNull()?.id
-                    )
-                }
+                _uiState.update { it.copy(categories = categories) }
             }
         }
         if (expenseId != null) loadExpense(expenseId)
@@ -94,6 +95,19 @@ class AddExpenseViewModel(
     fun onCategorySelected(id: String) = _uiState.update { it.copy(selectedCategoryId = id, errors = it.errors - ExpenseField.CATEGORY) }
     fun onDateTimeChanged(value: LocalDateTime) = _uiState.update { it.copy(dateTime = value) }
     fun onUnnecessaryToggled(value: Boolean) = _uiState.update { it.copy(isUnnecessary = value) }
+
+    /** Creates a custom category and selects it. Rejections go back to the pop-up as an event. */
+    fun onAddCategory(name: String, icon: String) {
+        viewModelScope.launch {
+            when (val result = addCategory(NewCategoryDraft(name, icon))) {
+                is AddCategoryResult.Success -> {
+                    _uiState.update { it.copy(selectedCategoryId = result.category.id) }
+                    _events.send(AddExpenseEvent.CategoryAdded)
+                }
+                is AddCategoryResult.Invalid -> _events.send(AddExpenseEvent.CategoryRejected(result.error))
+            }
+        }
+    }
 
     fun onSaveClicked() {
         val s = _uiState.value
@@ -122,9 +136,8 @@ class AddExpenseViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val c = (this[APPLICATION_KEY] as HissabApp).container
-                // The fragment's arguments arrive in the SavedStateHandle.
                 val id = createSavedStateHandle().get<Long>(ARG_EXPENSE_ID)
-                AddExpenseViewModel(id, c.addExpense, c.updateExpense, c.getExpense, c.categoryRepository)
+                AddExpenseViewModel(id, c.addExpense, c.updateExpense, c.getExpense, c.addCategory, c.categoryRepository)
             }
         }
     }

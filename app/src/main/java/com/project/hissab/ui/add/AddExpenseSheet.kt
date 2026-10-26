@@ -2,20 +2,20 @@ package com.project.hissab.ui.add
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.graphics.ColorUtils
 import androidx.core.os.bundleOf
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.GridLayoutManager
 import com.project.hissab.R
-import com.project.hissab.databinding.ItemCategoryBinding
 import com.project.hissab.databinding.SheetAddExpenseBinding
+import com.project.hissab.domain.model.Category
+import com.project.hissab.domain.model.CategoryInputError
 import com.project.hissab.domain.model.ExpenseField
 import com.project.hissab.domain.model.PaymentMethod
 import com.project.hissab.util.Formatters
@@ -31,6 +31,15 @@ class AddExpenseSheet : BottomSheetDialogFragment() {
     private var _binding: SheetAddExpenseBinding? = null
     private val binding get() = _binding!!
     private val viewModel: AddExpenseViewModel by viewModels { AddExpenseViewModel.Factory }
+
+    private val categoryAdapter = CategoryTileAdapter(
+        onSelect = { viewModel.onCategorySelected(it) },
+        onAdd = { showNewCategoryDialog() }
+    )
+
+    private var newCategoryDialog: NewCategoryDialog? = null
+    private var scrollToSelected = false      // bring the selected tile into view after the next update
+    private var initialScrollDone = false     // do that once when the sheet opens
 
     private val chipIds = mapOf(
         PaymentMethod.UPI to R.id.chipUpi,
@@ -52,6 +61,11 @@ class AddExpenseSheet : BottomSheetDialogFragment() {
                     dismiss()
                 }
                 AddExpenseEvent.NotFound -> { toast("This expense no longer exists"); dismiss() }
+                AddExpenseEvent.CategoryAdded -> newCategoryDialog?.dismiss()
+                is AddExpenseEvent.CategoryRejected -> {
+                    scrollToSelected = false
+                    newCategoryDialog?.showError(event.error.message())
+                }
             }
         }
     }
@@ -71,6 +85,11 @@ class AddExpenseSheet : BottomSheetDialogFragment() {
         btnDateTime.setOnClickListener { pickDateTime(viewModel.uiState.value.dateTime) }
         switchUnnecessary.setOnCheckedChangeListener { _, checked -> viewModel.onUnnecessaryToggled(checked) }
         btnSave.setOnClickListener { viewModel.onSaveClicked() }
+
+        // Category picker: 3 rows, scrolls sideways
+        rvCategories.layoutManager = GridLayoutManager(requireContext(), CATEGORY_ROWS, GridLayoutManager.HORIZONTAL, false)
+        rvCategories.adapter = categoryAdapter
+        rvCategories.itemAnimator = null
     }
 
     private fun render(state: AddExpenseUiState) = with(binding) {
@@ -87,23 +106,42 @@ class AddExpenseSheet : BottomSheetDialogFragment() {
         btnDateTime.text = "🗓  " + Formatters.dateTime(state.dateTime)
         chipIds[state.paymentMethod]?.let { if (chipGroupPay.checkedChipId != it) chipGroupPay.check(it) }
         if (switchUnnecessary.isChecked != state.isUnnecessary) switchUnnecessary.isChecked = state.isUnnecessary
+
         renderCategories(state)
     }
 
     private fun renderCategories(state: AddExpenseUiState) {
-        val container = binding.categoryContainer
-        container.removeAllViews()
-        state.categories.forEach { category ->
-            val tile = ItemCategoryBinding.inflate(layoutInflater, container, false)
-            val selected = category.id == state.selectedCategoryId
-            tile.tvCatIcon.text = category.icon
-            tile.tvCatIcon.backgroundTintList = ColorStateList.valueOf(ColorUtils.setAlphaComponent(category.color, 0x55))
-            tile.tvCatName.text = category.name
-            tile.tvCatName.setTextColor(requireContext().getColor(if (selected) R.color.text else R.color.mute))
-            if (selected) tile.root.setBackgroundResource(R.drawable.bg_category_selected)
-            tile.root.setOnClickListener { viewModel.onCategorySelected(category.id) }
-            container.addView(tile.root)
+        val tiles = state.categories.map { CategoryTile.Item(it, it.id == state.selectedCategoryId) } + CategoryTile.Add
+
+        // When the sheet opens on an expense with a category further along the grid, scroll to it once.
+        if (!initialScrollDone && state.selectedCategoryId != Category.NONE_ID) {
+            initialScrollDone = true
+            scrollToSelected = true
         }
+
+        categoryAdapter.submitList(tiles) {
+            if (scrollToSelected) {
+                val index = tiles.indexOfFirst { it is CategoryTile.Item && it.selected }
+                if (index >= 0) {
+                    scrollToSelected = false
+                    _binding?.rvCategories?.smoothScrollToPosition(index)
+                }
+            }
+        }
+    }
+
+    private fun showNewCategoryDialog() {
+        newCategoryDialog?.dismiss()
+        newCategoryDialog = NewCategoryDialog(requireContext()) { name, icon ->
+            scrollToSelected = true       // the new category becomes selected; show it
+            viewModel.onAddCategory(name, icon)
+        }.also { it.show() }
+    }
+
+    private fun CategoryInputError.message() = when (this) {
+        CategoryInputError.EMPTY_NAME -> "Enter a name"
+        CategoryInputError.NAME_TOO_LONG -> "That name is too long"
+        CategoryInputError.DUPLICATE_NAME -> "A category with this name already exists"
     }
 
     private fun pickDateTime(current: LocalDateTime) {
@@ -117,12 +155,18 @@ class AddExpenseSheet : BottomSheetDialogFragment() {
     private fun toast(text: String) = Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
 
     override fun onDestroyView() {
+        newCategoryDialog?.dismiss()
+        newCategoryDialog = null
+        initialScrollDone = false
+        scrollToSelected = false
         _binding = null
         super.onDestroyView()
     }
 
     companion object {
         const val TAG = "AddExpenseSheet"
+        private const val CATEGORY_ROWS = 2
+
         fun newInstance(expenseId: Long? = null) = AddExpenseSheet().apply {
             arguments = expenseId?.let { bundleOf(AddExpenseViewModel.ARG_EXPENSE_ID to it) }
         }

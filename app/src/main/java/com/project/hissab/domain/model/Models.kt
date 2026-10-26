@@ -7,7 +7,13 @@ enum class PaymentMethod { UPI, CASH, CREDIT_CARD }
 
 data class Category(val id: String, val name: String, val icon: String, val color: Int) {
     companion object {
-        val UNKNOWN = Category("unknown", "Other", "🧾", 0xFF9AA3B5.toInt())
+        const val NONE_ID = "none"
+
+        /** Built-in and always available. New expenses start with this one. */
+        val NONE = Category(NONE_ID, "No category", "🏷️", 0xFF9AA3B5.toInt())
+
+        /** Shown for an expense whose category can't be found. */
+        val UNKNOWN = NONE
     }
 }
 
@@ -105,4 +111,13 @@ data class SpendingOverview(
     val creditCard: Double
 ) {
     val spent: Double get() = budget.spent
+}
+
+data class NewCategoryDraft(val name: String, val icon: String)
+
+enum class CategoryInputError { EMPTY_NAME, NAME_TOO_LONG, DUPLICATE_NAME }
+
+sealed interface AddCategoryResult {
+    data class Success(val category: Category) : AddCategoryResult
+    data class Invalid(val error: CategoryInputError) : AddCategoryResult
 }

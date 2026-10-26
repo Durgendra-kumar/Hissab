@@ -36,6 +36,7 @@ data class StatsUiState(
 class StatsUiMapper {
     fun map(data: StatsData, categories: List<Category>): StatsUiState {
         val byId = categories.associateBy { it.id }
+
         val slices = data.categoryTotals.map { t ->
             val c = byId[t.categoryId] ?: Category.UNKNOWN
             val percent = if (data.monthTotal > 0) t.amount / data.monthTotal * 100 else 0.0

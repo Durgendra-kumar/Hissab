@@ -3,12 +3,13 @@ package com.project.hissab
 import android.app.Application
 import android.content.Context
 import com.project.hissab.data.DataStoreBudgetRepository
-import com.project.hissab.data.DefaultCategoryRepository
+import com.project.hissab.data.RoomCategoryRepository
 import com.project.hissab.data.RoomExpenseRepository
 import com.project.hissab.data.local.AppDatabase
 import com.project.hissab.domain.repository.BudgetRepository
 import com.project.hissab.domain.repository.CategoryRepository
 import com.project.hissab.domain.repository.ExpenseRepository
+import com.project.hissab.domain.usecase.AddCategoryUseCase
 import com.project.hissab.domain.usecase.AddExpenseUseCase
 import com.project.hissab.domain.usecase.DeleteExpenseUseCase
 import com.project.hissab.domain.usecase.DeleteMonthUseCase
@@ -33,7 +34,10 @@ class AppContainer(context: Context) {
     private val validator = ExpenseValidator()
 
     val expenseRepository: ExpenseRepository = RoomExpenseRepository(database.expenseDao())
-    val categoryRepository: CategoryRepository = DefaultCategoryRepository()
+
+    val categoryRepository: CategoryRepository = RoomCategoryRepository(database.categoryDao())
+    val addCategory = AddCategoryUseCase(categoryRepository)
+
     val budgetRepository: BudgetRepository = DataStoreBudgetRepository(context)
 
     val addExpense = AddExpenseUseCase(expenseRepository, validator)
