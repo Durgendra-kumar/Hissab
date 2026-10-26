@@ -24,6 +24,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.time.LocalDateTime
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
 
 /** Add mode by default; pass an expense id to open it in Edit mode. */
 class AddExpenseSheet : BottomSheetDialogFragment() {
@@ -33,8 +35,8 @@ class AddExpenseSheet : BottomSheetDialogFragment() {
     private val viewModel: AddExpenseViewModel by viewModels { AddExpenseViewModel.Factory }
 
     private val categoryAdapter = CategoryTileAdapter(
-        onSelect = { viewModel.onCategorySelected(it) },
-        onAdd = { showNewCategoryDialog() }
+        onSelect = { dismissKeyboard(); viewModel.onCategorySelected(it) },
+        onAdd = { dismissKeyboard(); showNewCategoryDialog() }
     )
 
     private var newCategoryDialog: NewCategoryDialog? = null
@@ -77,12 +79,20 @@ class AddExpenseSheet : BottomSheetDialogFragment() {
     }
 
     private fun bindInputs() = with(binding) {
+        root.isFocusableInTouchMode = true
+        root.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
         etName.doAfterTextChanged { viewModel.onTitleChanged(it?.toString().orEmpty()) }
         etAmount.doAfterTextChanged { viewModel.onAmountChanged(it?.toString().orEmpty()) }
         chipGroupPay.setOnCheckedStateChangeListener { _, ids ->
             chipIds.entries.firstOrNull { it.value == ids.firstOrNull() }?.let { viewModel.onPaymentSelected(it.key) }
         }
-        btnDateTime.setOnClickListener { pickDateTime(viewModel.uiState.value.dateTime) }
+        btnDateTime.setOnClickListener {
+            dismissKeyboard()
+            pickDateTime(viewModel.uiState.value.dateTime)
+        }
+        chipIds.values.forEach { id -> root.findViewById<View>(id).setOnClickListener { dismissKeyboard() } }
+        switchUnnecessary.setOnClickListener { dismissKeyboard() }
+
         switchUnnecessary.setOnCheckedChangeListener { _, checked -> viewModel.onUnnecessaryToggled(checked) }
         btnSave.setOnClickListener { viewModel.onSaveClicked() }
 
@@ -170,5 +180,11 @@ class AddExpenseSheet : BottomSheetDialogFragment() {
         fun newInstance(expenseId: Long? = null) = AddExpenseSheet().apply {
             arguments = expenseId?.let { bundleOf(AddExpenseViewModel.ARG_EXPENSE_ID to it) }
         }
+    }
+    private fun dismissKeyboard() {
+        val root = _binding?.root ?: return
+        root.requestFocus()      // the sheet itself takes focus, so no text field gets it back
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(root.windowToken, 0)
     }
 }
